@@ -614,7 +614,7 @@ def infer(nlu1,
     nlu_t = [nlu_t1]
 
     tb1 = data_table[0]
-    hds1 = tb1['header']
+    hds1 = tb1['header_knowledge']
     tb = [tb1]
     hds = [hds1]
     hs_t = [[]]
@@ -628,7 +628,9 @@ def infer(nlu1,
                                                                                     l_hs, engine, tb,
                                                                                     nlu_t, nlu_tt,
                                                                                     tt_to_t_idx, nlu,
-                                                                                    beam_size=beam_size)
+                                                                                    beam_size=beam_size,
+                                                                                    knowledge=hds,
+                                                                                    knowledge_header=hds)
 
     # sort and generate
     pr_wc, pr_wo, pr_wv, pr_sql_i = sort_and_generate_pr_w(pr_sql_i)
@@ -707,7 +709,8 @@ if __name__ == '__main__':
         model, model_bert, tokenizer, bert_config = get_models(args, BERT_PT_PATH, trained=True,
                                                                path_model_bert=path_model_bert, path_model=path_model)
 
-    ## 5. Get optimizers
+    ## 5. Get optimizers"""
+    """
     if args.do_train:
         opt, opt_bert = get_opt(model, model_bert, args.fine_tune)
 
@@ -767,7 +770,7 @@ if __name__ == '__main__':
                 torch.save(state, os.path.join('.', 'model_bert_best.pt'))
 
             print(f" Best Dev lx acc: {acc_lx_t_best} at epoch: {epoch_best}")
-
+"""
     if args.do_infer:
         # To use recent corenlp: https://github.com/stanfordnlp/python-stanford-corenlp
         # 1. pip install stanford-corenlp
@@ -779,13 +782,13 @@ if __name__ == '__main__':
 
         import corenlp
 
-        client = corenlp.CoreNLPClient(annotators='ssplit,tokenize'.split(','))
+        client = corenlp.CoreNLPClient(annotators='ssplit,tokenize'.split(','), start_server=False, endpoint='http://localhost:9004')
 
         nlu1 = "Which company have more than 100 employees?"
         path_db = './data_and_model'
-        db_name = 'ctable'
-        data_table = load_jsonl('./data_and_model/ctable.tables.jsonl')
-        table_name = 'ftable1'
+        db_name = 'train'
+        data_table = load_jsonl('./data_and_model/train_knowledge.jsonl')
+        table_name = 'sqlite_master'
         n_Q = 100000 if args.infer_loop else 1
         for i in range(n_Q):
             if n_Q > 1:
